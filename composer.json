@@ -1,0 +1,37 @@
+{
+  "name": "dynamic/csv-utility",
+  "description": "A csv utility class that aids in converting DataLists and ArrayLists to csv data.",
+  "authors": [
+    {
+      "name": "Dynamic Inc.",
+      "email": "dev@dy.ag"
+    }
+  ],
+  "keywords": [
+    "silverstripe"
+  ],
+  "type": "silverstripe-module",
+  "license": "BSD-3-Clause",
+  "require": {
+    "silverstripe/cms": "^3.2",
+    "silverstripe/framework": "^3.2"
+  },
+  "require-dev": {
+    "phpunit/PHPUnit": "^3.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "dynamic\\CsvUtility\\": "src"
+    }
+  },
+  "config": {
+    "process-timeout": 600
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0.x-dev"
+    }
+  }
+}
