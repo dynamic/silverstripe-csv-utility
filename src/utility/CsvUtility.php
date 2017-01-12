@@ -52,6 +52,10 @@ class CsvUtility
      * @var string
      */
     private $enclosure = '"';
+    /**
+     * @var string
+     */
+    private $utility_interface = 'Dynamic\CsvUtility\UtilInterface\CsvUtilityInterface';
 
     /**
      * FACTCsvUtility constructor.
@@ -152,6 +156,24 @@ class CsvUtility
     }
 
     /**
+     * @param $interface
+     * @return $this
+     */
+    public function setUtilityInterface($interface)
+    {
+        $this->utility_interface = $interface;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUtilityInterface()
+    {
+        return $this->utility_interface;
+    }
+
+    /**
      * @return $this
      */
     public function setPattern()
@@ -162,7 +184,7 @@ class CsvUtility
         $extensions[$class] = $class;
 
         if (!$this->getImplementsUtilInterface($extensions)) {
-            user_error("Class {$class} is required to implement Dynamic\\CsvUtility\\UtilInterface\\CsvUtilityInterface before a report can be generated.", E_USER_ERROR);
+            user_error("Class {$class} is required to implement {$this->getUtilityInterface()} before a report can be generated.", E_USER_ERROR);
         }
         $this->pattern = Injector::inst()->create($class)->getExportFields();
 
@@ -178,7 +200,7 @@ class CsvUtility
         $implements = false;
         foreach ($extensions as $key => $val) {
             if (!$implements) {
-                if (in_array('Dynamic\CsvUtility\UtilInterface\CsvUtilityInterface', class_implements($key))) $implements = true;
+                if (in_array($this->getUtilityInterface(), class_implements($key))) $implements = true;
             }
         }
         return $implements;
