@@ -1,9 +1,10 @@
 <?php
 
-namespace dynamic\CsvUtility\UtilInterface;
+namespace Dynamic\CsvUtility\UtilInterface;
 
 /**
- * Interface FACTReportableInterface
+ * Interface CsvUtilityInterface
+ * @package Dynamic\CsvUtility\UtilInterface
  */
 interface CsvUtilityInterface
 {
