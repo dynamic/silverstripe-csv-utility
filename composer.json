@@ -3,8 +3,9 @@
   "description": "A csv utility class that aids in converting DataLists and ArrayLists to csv data.",
   "authors": [
     {
-      "name": "Dynamic Inc.",
-      "email": "dev@dy.ag"
+      "name": "Dynamic",
+      "email": "dev@dynamicagency.com",
+      "homepage": "http://www.dynamicagency.com"
     }
   ],
   "keywords": [
@@ -30,6 +31,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "extra": {
+    "installer-name": "csv-utility",
     "branch-alias": {
       "dev-master": "1.0.x-dev"
     }

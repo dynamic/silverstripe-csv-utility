@@ -1,13 +1,13 @@
 <?php
 
-namespace dynamic\CsvUtility\Utility;
+namespace Dynamic\CsvUtility\Utility;
 
 use \Injector;
 use \DataObject;
 
 /**
  * Class CsvUtility
- * @package dynamic\CsvUtility
+ * @package Dynamic\CsvUtility\Utility
  */
 class CsvUtility
 {
@@ -162,7 +162,7 @@ class CsvUtility
         $extensions[$class] = $class;
 
         if (!$this->getImplementsUtilInterface($extensions)) {
-            user_error("Class {$class} is required to implement dynamic\\CsvUtility\\UtilInterface\\CsvUtilityInterface before a report can be generated.", E_USER_ERROR);
+            user_error("Class {$class} is required to implement Dynamic\\CsvUtility\\UtilInterface\\CsvUtilityInterface before a report can be generated.", E_USER_ERROR);
         }
         $this->pattern = Injector::inst()->create($class)->getExportFields();
 
@@ -178,7 +178,7 @@ class CsvUtility
         $implements = false;
         foreach ($extensions as $key => $val) {
             if (!$implements) {
-                if (in_array('dynamic\CsvUtility\UtilInterface\CsvUtilityInterface', class_implements($key))) $implements = true;
+                if (in_array('Dynamic\CsvUtility\UtilInterface\CsvUtilityInterface', class_implements($key))) $implements = true;
             }
         }
         return $implements;
