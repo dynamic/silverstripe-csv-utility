@@ -14,8 +14,8 @@
   "type": "silverstripe-module",
   "license": "BSD-3-Clause",
   "require": {
-    "silverstripe/cms": "^3.2",
-    "silverstripe/framework": "^3.2"
+    "silverstripe/framework": "^3.2",
+    "stevie-mayhew/trait-loader": "^1.0"
   },
   "require-dev": {
     "phpunit/PHPUnit": "^3.7"
