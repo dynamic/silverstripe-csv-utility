@@ -2,15 +2,16 @@
 
 namespace Dynamic\CsvUtility\Utility;
 
-use \Injector;
-use \DataObject;
+use Dynamic\CsvUtility\CsvUtilTraits\CsvUtilityTrait;
 
 /**
  * Class CsvUtility
  * @package Dynamic\CsvUtility\Utility
  */
-class CsvUtility
+abstract class CsvUtility
 {
+
+    use CsvUtilityTrait;
 
     /**
      * @var
@@ -19,31 +20,11 @@ class CsvUtility
     /**
      * @var
      */
-    private $request;
-    /**
-     * @var array
-     */
-    private $allowed_report_types = [];
-    /**
-     * @var string
-     */
-    private $report_type;
-    /**
-     * @var array
-     */
-    private $pattern;
-    /**
-     * @var array
-     */
-    private $header_fields;
-    /**
-     * @var
-     */
     private $handle;
     /**
-     * @var
+     * @var array
      */
-    private $relation_name;
+    protected $header_fields = [];
     /**
      * @var string
      */
@@ -52,22 +33,14 @@ class CsvUtility
      * @var string
      */
     private $enclosure = '"';
-    /**
-     * @var string
-     */
-    private $utility_interface = 'Dynamic\CsvUtility\UtilInterface\CsvUtilityInterface';
 
     /**
-     * FACTCsvUtility constructor.
+     * CsvUtility constructor.
      * @param $data
-     * @param $request
      */
-    public function __construct($data, $request)
+    public function __construct($data)
     {
-
         $this->setRawData($data);
-        $this->setRequest($request);
-
     }
 
     /**
@@ -88,154 +61,6 @@ class CsvUtility
         return $this->raw_data;
     }
 
-    /**
-     * @param $request
-     * @return $this
-     */
-    public function setRequest($request)
-    {
-        $this->request = $request;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRequest()
-    {
-        return $this->request;
-    }
-
-    /**
-     * @param array $types
-     * @return $this
-     */
-    public function setAllowedReportTypes($types = [])
-    {
-        if ((array)$types === $types && !empty($types)) {
-            $this->allowed_report_types = $types;
-        }
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAllowedReportTypes()
-    {
-        return $this->allowed_report_types;
-    }
-
-    /**
-     * @return $this
-     */
-    public function setReportType()
-    {
-        if (!$request = $this->getRequest()) {
-            user_error("The \$request isn't accessible or isn't set.", E_USER_ERROR);
-        }
-        if (!$reportRequestType = $request->getVar('ReportType')) {
-            user_error("The request variable \"ReportType\" isn't accessible or isn't set.", E_USER_ERROR);
-        }
-        if (!array_key_exists($reportRequestType, $this->getAllowedReportTypes())) {
-            user_error("The requested \"ReportType\" isn't an allowed report type.", E_USER_ERROR);
-        }
-        $this->report_type = $reportRequestType;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getReportType()
-    {
-        if (!$this->report_type) {
-            $this->setReportType();
-        }
-        return $this->report_type;
-    }
-
-    /**
-     * @param $interface
-     * @return $this
-     */
-    public function setUtilityInterface($interface)
-    {
-        $this->utility_interface = $interface;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUtilityInterface()
-    {
-        return $this->utility_interface;
-    }
-
-    /**
-     * @return $this
-     */
-    public function setPattern()
-    {
-        $reportType = $this->getReportType();
-        $class = $this->getAllowedReportTypes()[$reportType];
-        $extensions = Injector::inst()->create($class)->getExtensionInstances();
-        $extensions[$class] = $class;
-
-        if (!$this->getImplementsUtilInterface($extensions)) {
-            user_error("Class {$class} is required to implement {$this->getUtilityInterface()} before a report can be generated.", E_USER_ERROR);
-        }
-        $this->pattern = Injector::inst()->create($class)->getExportFields();
-
-        return $this;
-    }
-
-    /**
-     * @param array $extensions
-     * @return bool
-     */
-    public function getImplementsUtilInterface($extensions = [])
-    {
-        $implements = false;
-        foreach ($extensions as $key => $val) {
-            if (!$implements) {
-                if (in_array($this->getUtilityInterface(), class_implements($key))) $implements = true;
-            }
-        }
-        return $implements;
-    }
-
-    /**
-     * @return array
-     */
-    public function getPattern()
-    {
-        if (!$this->pattern) {
-            $this->setPattern();
-        }
-        return $this->pattern;
-    }
-
-    /**
-     * @return $this
-     */
-    public function setHeaderFields()
-    {
-        $this->header_fields = array_values($this->getPattern());
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getHeaderFields()
-    {
-        if (!$this->header_fields) {
-            $this->setHeaderFields();
-        }
-        return $this->header_fields;
-    }
 
     /**
      *
@@ -293,79 +118,45 @@ class CsvUtility
     }
 
     /**
-     * @param $relationName
+     * @param array $headerFields
      * @return $this
      */
-    public function setRelationName($relationName)
+    public function setHeaderFields($headerFields)
     {
-        $this->relation_name = $relationName;
-        return $this;
-    }
+        if ((array)$headerFields !== $headerFields) {
 
-    /**
-     * @return mixed
-     */
-    public function getRelationName()
-    {
-        return $this->relation_name;
-    }
-
-    /**
-     * @param $row
-     * @return $this
-     */
-    protected function addFileContents($row)
-    {
-        $deliminator = $this->getDeliminator();
-        $enclosure = $this->getEnclosure();
-        $relationName = $this->getRelationName();
-
-        $data = [];
-        if ((array)$row === $row) {
-            //todo generate new row from pattern and provided row data
-        } elseif ($row instanceof DataObject) {
-            $pattern = $this->getPattern();
-
-            foreach ($pattern as $key => $val) {
-                if (strpos($key, '.') && $relationName && is_string($relationName)) {
-                    $parts = explode('.', $key);
-                    if (count($parts) == 3) {
-                        $value = ($parts[0] == $relationName) ? $row->$relationName()->$parts[1]()->$parts[2] : $row->$parts[0]()->$parts[1]()->$parts[2];
-                    } else {
-                        $value = ($parts[0] == $relationName) ? $row->$relationName()->$parts[1] : $row->$parts[0]()->$parts[1];
-                    }
-                } else {
-                    $value = $row->$key;
-                }
-                $data[] = $value;
-            }
         }
-
-        $this->putCSV($this->getHandle(), $data, $deliminator, $enclosure);
-
+        $this->header_fields = $headerFields;
         return $this;
     }
 
     /**
-     * @param $handle
-     * @param $data
-     * @param string $deliminator
-     * @param string $enclosure
+     * @return array
      */
-    protected function putCSV($handle, $data, $deliminator = ',', $enclosure = '"')
+    public function getHeaderFields()
     {
-        fputcsv($handle, $data, $deliminator, $enclosure);
+        return $this->header_fields;
     }
 
     /**
      * @return string
      */
-    protected function generateFile()
+    public function getFileContents()
+    {
+        return $this->generateFileData();
+    }
+
+    /**
+     * @return string
+     */
+    protected function generateFileData()
     {
         $contents = '';
         $data = $this->getRawData();
 
-        $this->putCSV($this->getHandle(), $this->getHeaderFields());
+        if (!empty($this->getHeaderFields())) {
+            $this->putCSV($this->getHandle(), $this->getHeaderFields());
+        }
 
         foreach ($data as $d) {
             $this->addFileContents($d);
@@ -382,11 +173,44 @@ class CsvUtility
     }
 
     /**
-     * @return string
+     * @param array $row
+     * @return $this
      */
-    public function getFileContents()
+    protected function addFileContents($row = [])
     {
-        return $this->generateFile();
+        $deliminator = $this->getDeliminator();
+        $enclosure = $this->getEnclosure();
+
+        $row = $this->preProcessData($row);
+
+        $data = [];
+        if ((array)$row === $row) {
+
+            $addRowData = function ($key, $val) use (&$data, &$deliminator, &$enclosure) {
+                $data[] = $val;
+            };
+
+            foreach ($row as $key => $val) {
+                $addRowData($key, $val);
+            }
+
+            $this->putCSV($this->getHandle(), $data, $deliminator, $enclosure);
+
+        }
+
+        return $this;
     }
+
+    /**
+     * @param $handle
+     * @param $data
+     * @param string $deliminator
+     * @param string $enclosure
+     */
+    protected function putCSV($handle, $data, $deliminator = ',', $enclosure = '"')
+    {
+        fputcsv($handle, $data, $deliminator, $enclosure);
+    }
+
 
 }
