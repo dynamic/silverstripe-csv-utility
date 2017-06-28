@@ -144,13 +144,18 @@ class SilverStripeCsvUtility extends CsvUtility
     public function setReportType()
     {
         if (!$request = $this->getRequest()) {
-            user_error("The \$request isn't accessible or isn't set.", E_USER_ERROR);
+            user_error("The \$request isn't accessible or isn't set.",
+                E_USER_ERROR);
         }
         if (!$reportRequestType = $request->getVar('ReportType')) {
-            user_error("The request variable \"ReportType\" isn't accessible or isn't set.", E_USER_ERROR);
+            user_error("The request variable \"ReportType\" isn't accessible or isn't set.",
+                E_USER_ERROR);
         }
-        if (!array_key_exists($reportRequestType, $this->getAllowedReportTypes())) {
-            user_error("The requested report type \"{$reportRequestType}\" isn't allowed.", E_USER_ERROR);
+        if (!array_key_exists($reportRequestType,
+            $this->getAllowedReportTypes())
+        ) {
+            user_error("The requested report type \"{$reportRequestType}\" isn't allowed.",
+                E_USER_ERROR);
         }
         $this->report_type = $reportRequestType;
         return $this;
@@ -195,7 +200,8 @@ class SilverStripeCsvUtility extends CsvUtility
         $extensions[$class] = $class;
 
         if (!$this->getImplementsUtilInterface($extensions)) {
-            user_error("Class {$class} is required to implement {$this->getUtilityInterface()} before a report can be generated.", E_USER_ERROR);
+            user_error("Class {$class} is required to implement {$this->getUtilityInterface()} before a report can be generated.",
+                E_USER_ERROR);
         }
         $this->pattern = Injector::inst()->create($class)->getExportFields();
 
@@ -211,7 +217,10 @@ class SilverStripeCsvUtility extends CsvUtility
         $implements = false;
         foreach ($extensions as $key => $val) {
             if (!$implements) {
-                if (in_array($this->getUtilityInterface(), class_implements($key))) $implements = true;
+                if (in_array($this->getUtilityInterface(),
+                    class_implements($key))) {
+                    $implements = true;
+                }
             }
         }
         return $implements;
@@ -244,13 +253,25 @@ class SilverStripeCsvUtility extends CsvUtility
         $relationName = $this->getRelationName();
 
         if ($data instanceof DataObject) {
-            $addToArrayData = function ($key, $val) use (&$data, &$relationName, &$arrayData) {
-                if (strpos($key, '.') && $relationName && is_string($relationName)) {
+            $addToArrayData = function ($key, $val) use (
+                &$data,
+                &$relationName,
+                &$arrayData
+            ) {
+                if (strpos($key,
+                        '.') && $relationName && is_string($relationName)
+                ) {
                     $parts = explode('.', $key);
                     if (count($parts) == 3) {
-                        $value = ($parts[0] == $relationName) ? $data->$relationName()->$parts[1]()->$parts[2] : $data->$parts[0]()->$parts[1]()->$parts[2];
+                        $relationCall = ($parts[0] == $relationName) ? $relationName : $parts[0];
+                        $secondRelationCall = $parts[1];
+                        $varName = $parts[2];
+                        $value = $data->$relationCall()
+                            ->$secondRelationCall()->$varName;
                     } else {
-                        $value = ($parts[0] == $relationName) ? $data->$relationName()->$parts[1] : $data->$parts[0]()->$parts[1];
+                        $relationCall = ($parts[0] == $relationName) ? $relationName : $parts[0];
+                        $varName = $parts[1];
+                        $value = $data->$relationCall()->$varName;
                     }
                 } else {
                     $value = $data->$key;
